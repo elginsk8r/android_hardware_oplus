@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "vendor.lineage.touch@1.0-service.oplus"
+#define LOG_TAG "vendor.evervolv.touch@1.0-service.oplus"
 
 #include <android-base/file.h>
 #include <android-base/strings.h>
@@ -32,7 +32,7 @@ constexpr const char* kGestureEnableIndepPath = "/proc/touchpanel/double_tap_ena
 }  // anonymous namespace
 
 namespace vendor {
-namespace lineage {
+namespace evervolv {
 namespace touch {
 namespace V1_0 {
 namespace implementation {
@@ -71,5 +71,5 @@ Return<bool> TouchscreenGesture::setGestureEnabled(const Gesture& gesture, bool 
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace touch
-}  // namespace lineage
+}  // namespace evervolv
 }  // namespace vendor
