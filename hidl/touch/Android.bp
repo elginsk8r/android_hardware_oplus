@@ -16,13 +16,13 @@ oplus_lineage_touch_hal_cc_defaults {
 }
 
 cc_binary {
-    name: "vendor.lineage.touch@1.0-service.oplus",
+    name: "vendor.evervolv.touch@1.0-service.oplus",
     defaults: [
         "hidl_defaults",
         "oplus_lineage_touch_hal_defaults",
     ],
-    init_rc: ["vendor.lineage.touch@1.0-service.oplus.rc"],
-    vintf_fragments: ["vendor.lineage.touch@1.0-service.oplus.xml"],
+    init_rc: ["vendor.evervolv.touch@1.0-service.oplus.rc"],
+    vintf_fragments: ["vendor.evervolv.touch@1.0-service.oplus.xml"],
     vendor: true,
     relative_install_path: "hw",
     srcs: [
@@ -34,6 +34,6 @@ cc_binary {
         "libbase",
         "libhidlbase",
         "libutils",
-        "vendor.lineage.touch@1.0",
+        "vendor.evervolv.touch@1.0",
     ],
 }
