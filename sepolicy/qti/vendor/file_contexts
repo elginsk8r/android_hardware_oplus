@@ -102,7 +102,7 @@
 /dev/stmvl53l1_ranging                      u:object_r:vendor_tof_device:s0
 
 # Touch
-/(vendor|system/vendor)/bin/hw/vendor\.lineage\.touch@1\.0-service\.oplus    u:object_r:hal_lineage_touch_default_exec:s0
+/(vendor|system/vendor)/bin/hw/vendor\.evervolv\.touch@1\.0-service\.oplus    u:object_r:hal_evervolv_touch_default_exec:s0
 
 # Ultrasound
 /dev/audio_ultrasound     u:object_r:ultrasound_device:s0
