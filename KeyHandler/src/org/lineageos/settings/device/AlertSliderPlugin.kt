@@ -10,9 +10,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.display.AmbientDisplayConfiguration
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.os.UserHandle
 import android.view.View
 import com.android.systemui.plugins.OverlayPlugin
 import com.android.systemui.plugins.annotations.Requires
@@ -66,8 +68,9 @@ class AlertSliderPlugin : OverlayPlugin {
 
     override fun setup(statusBar: View, navBar: View) {}
 
-    private inner class NotificationHandler(context: Context) : Handler(Looper.getMainLooper()) {
+    private inner class NotificationHandler(private var context: Context) : Handler(Looper.getMainLooper()) {
         private var dialog = AlertSliderDialog(context)
+        private var displayConfig = AmbientDisplayConfiguration(context)
         private var showing = false
             set(value) {
                 synchronized (updateLock) {
@@ -79,6 +82,7 @@ class AlertSliderPlugin : OverlayPlugin {
                         // Show/hide dialog
                         if (value) {
                             handleResetTimeout()
+                            handleNotificationPulse()
                             dialog.show()
                         } else {
                             dialog.dismiss()
@@ -119,7 +123,17 @@ class AlertSliderPlugin : OverlayPlugin {
 
         private fun handleUpdate(info: NotificationInfo) {
             synchronized (updateLock) {
+                handleResetTimeout()
+                handleNotificationPulse()
                 dialog.setState(info.position, info.mode, info.flip)
+            }
+        }
+
+        private fun handleNotificationPulse() {
+            if (displayConfig.pulseOnNotificationEnabled(UserHandle.USER_CURRENT)) {
+                context.sendBroadcastAsUser(
+                    Intent("com.android.systemui.doze.pulse"), UserHandle.CURRENT
+                )
             }
         }
     }
