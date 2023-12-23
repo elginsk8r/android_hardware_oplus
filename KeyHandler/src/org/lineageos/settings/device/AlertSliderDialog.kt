@@ -55,6 +55,7 @@ class AlertSliderDialog(context: Context) : Dialog(context, R.style.alert_slider
         setContentView(R.layout.alert_slider_dialog)
     }
 
+    @Synchronized
     fun setState(position: Int, ringerMode: Int, flip: Boolean) {
         window?.let {
             it.attributes = it.attributes.apply {
