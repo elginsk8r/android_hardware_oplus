@@ -29,6 +29,24 @@ class AlertSliderDialog(context: Context) : Dialog(context, R.style.alert_slider
     private val iconView by lazy { findViewById<ImageView>(R.id.alert_slider_icon)!! }
     private val textView by lazy { findViewById<TextView>(R.id.alert_slider_text)!! }
 
+    private val modeIconMap: HashMap<Int, Int> = hashMapOf(
+        AudioManager.RINGER_MODE_SILENT to R.drawable.ic_volume_ringer_mute,
+        AudioManager.RINGER_MODE_VIBRATE to R.drawable.ic_volume_ringer_vibrate,
+        AudioManager.RINGER_MODE_NORMAL to R.drawable.ic_volume_ringer,
+        KeyHandler.ZEN_PRIORITY_ONLY to R.drawable.ic_notifications_alert,
+        KeyHandler.ZEN_TOTAL_SILENCE to R.drawable.ic_notifications_silence,
+        KeyHandler.ZEN_ALARMS_ONLY to R.drawable.ic_alarm
+    )
+
+    private val modeTextMap: HashMap<Int, Int> = hashMapOf(
+        AudioManager.RINGER_MODE_SILENT to R.string.alert_slider_mode_silent,
+        AudioManager.RINGER_MODE_VIBRATE to R.string.alert_slider_mode_vibration,
+        AudioManager.RINGER_MODE_NORMAL to R.string.alert_slider_mode_normal,
+        KeyHandler.ZEN_PRIORITY_ONLY to R.string.alert_slider_mode_dnd_priority_only,
+        KeyHandler.ZEN_TOTAL_SILENCE to R.string.alert_slider_mode_dnd_total_silence,
+        KeyHandler.ZEN_ALARMS_ONLY to R.string.alert_slider_mode_dnd_alarms_only
+    )
+
     init {
         window?.let {
             it.requestFeature(Window.FEATURE_NO_TITLE)
@@ -98,25 +116,17 @@ class AlertSliderDialog(context: Context) : Dialog(context, R.style.alert_slider
             }
         })
 
-        iconView.setImageResource(when (ringerMode) {
-            AudioManager.RINGER_MODE_SILENT -> R.drawable.ic_volume_ringer_mute
-            AudioManager.RINGER_MODE_VIBRATE -> R.drawable.ic_volume_ringer_vibrate
-            AudioManager.RINGER_MODE_NORMAL -> R.drawable.ic_volume_ringer
-            KeyHandler.ZEN_PRIORITY_ONLY -> R.drawable.ic_notifications_alert
-            KeyHandler.ZEN_TOTAL_SILENCE -> R.drawable.ic_notifications_silence
-            KeyHandler.ZEN_ALARMS_ONLY -> R.drawable.ic_alarm
-            else -> R.drawable.ic_info
-        })
+        modeIconMap.get(ringerMode)?.let {
+            iconView.setImageResource(it)
+        } ?: {
+            iconView.setImageResource(R.drawable.ic_info)
+        }
 
-        textView.setText(when (ringerMode) {
-            AudioManager.RINGER_MODE_SILENT -> R.string.alert_slider_mode_silent
-            AudioManager.RINGER_MODE_VIBRATE -> R.string.alert_slider_mode_vibration
-            AudioManager.RINGER_MODE_NORMAL -> R.string.alert_slider_mode_normal
-            KeyHandler.ZEN_PRIORITY_ONLY -> R.string.alert_slider_mode_dnd_priority_only
-            KeyHandler.ZEN_TOTAL_SILENCE -> R.string.alert_slider_mode_dnd_total_silence
-            KeyHandler.ZEN_ALARMS_ONLY -> R.string.alert_slider_mode_dnd_alarms_only
-            else -> R.string.alert_slider_mode_none
-        })
+        modeTextMap.get(ringerMode)?.let {
+            textView.setText(it)
+        } ?: {
+            textView.setText(R.string.alert_slider_mode_none)
+        }
     }
 
     companion object {
