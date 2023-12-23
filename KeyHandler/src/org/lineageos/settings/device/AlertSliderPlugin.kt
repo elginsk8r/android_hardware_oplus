@@ -21,6 +21,7 @@ import com.android.systemui.plugins.annotations.Requires
 class AlertSliderPlugin : OverlayPlugin {
     private lateinit var pluginContext: Context
     private lateinit var handler: NotificationHandler
+    private val updateLock = Any()
 
     private data class NotificationInfo(
         val flip: Boolean,
@@ -32,19 +33,21 @@ class AlertSliderPlugin : OverlayPlugin {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 KeyHandler.CHANGED_ACTION -> {
-                    val display = intent.getIntExtra("display", SHOW_RIGHT)
-                        .takeIf { it != DISABLED } ?: return
-                    val ringer = intent.getIntExtra("mode", NONE)
-                        .takeIf { it != NONE } ?: return
+                    synchronized (updateLock) {
+                        val display = intent.getIntExtra("display", SHOW_RIGHT)
+                            .takeIf { it != DISABLED } ?: return
+                        val ringer = intent.getIntExtra("mode", NONE)
+                            .takeIf { it != NONE } ?: return
 
-                    handler.obtainMessage(
-                        MSG_DIALOG_UPDATE, NotificationInfo(
-                            display == SHOW_LEFT,
-                            intent.getIntExtra("position", KeyHandler.POSITION_BOTTOM),
-                            ringer
-                        )
-                    ).sendToTarget()
-                    handler.sendEmptyMessage(MSG_DIALOG_SHOW)
+                        handler.obtainMessage(
+                            MSG_DIALOG_UPDATE, NotificationInfo(
+                                display == SHOW_LEFT,
+                                intent.getIntExtra("position", KeyHandler.POSITION_BOTTOM),
+                                ringer
+                            )
+                        ).sendToTarget()
+                        handler.sendEmptyMessage(MSG_DIALOG_SHOW)
+                    }
                 }
             }
         }
@@ -67,21 +70,22 @@ class AlertSliderPlugin : OverlayPlugin {
         private var dialog = AlertSliderDialog(context)
         private var showing = false
             set(value) {
-                if (field != value) {
-                    // Remove pending messages
-                    removeMessages(MSG_DIALOG_SHOW)
-                    removeMessages(MSG_DIALOG_DISMISS)
+                synchronized (updateLock) {
+                    if (field != value) {
+                        // Remove pending messages
+                        removeMessages(MSG_DIALOG_SHOW)
+                        removeMessages(MSG_DIALOG_DISMISS)
 
-                    // Show/hide dialog
-                    if (value) {
-                        handleResetTimeout()
-                        dialog.show()
-                    } else {
-                        dialog.dismiss()
+                        // Show/hide dialog
+                        if (value) {
+                            handleResetTimeout()
+                            dialog.show()
+                        } else {
+                            dialog.dismiss()
+                        }
                     }
+                    field = value
                 }
-
-                field = value
             }
 
         override fun handleMessage(msg: Message) = when (msg.what) {
@@ -93,22 +97,30 @@ class AlertSliderPlugin : OverlayPlugin {
         }
 
         private fun handleShow() {
-            showing = true
+            synchronized (updateLock) {
+                showing = true
+            }
         }
 
         private fun handleDismiss() {
-            showing = false
+            synchronized (updateLock) {
+                showing = false
+            }
         }
 
         private fun handleResetTimeout() {
-            removeMessages(MSG_DIALOG_DISMISS)
-            sendMessageDelayed(
-                handler.obtainMessage(MSG_DIALOG_DISMISS, MSG_DIALOG_RESET, 0), DIALOG_TIMEOUT
-            )
+            synchronized (updateLock) {
+                removeMessages(MSG_DIALOG_DISMISS)
+                sendMessageDelayed(
+                    handler.obtainMessage(MSG_DIALOG_DISMISS, MSG_DIALOG_RESET, 0), DIALOG_TIMEOUT
+                )
+            }
         }
 
         private fun handleUpdate(info: NotificationInfo) {
-            dialog.setState(info.position, info.mode, info.flip)
+            synchronized (updateLock) {
+                dialog.setState(info.position, info.mode, info.flip)
+            }
         }
     }
 
