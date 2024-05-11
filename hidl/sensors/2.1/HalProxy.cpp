@@ -21,6 +21,7 @@
 #include <android/hardware/sensors/2.0/types.h>
 
 #include <android-base/file.h>
+#include <android-base/properties.h>
 #include "hardware_legacy/power.h"
 
 #include <dlfcn.h>
@@ -496,7 +497,8 @@ void HalProxy::initializeSensorList() {
                     ALOGV("Loaded sensor: %s", sensor.name.c_str());
                     sensor.sensorHandle = setSubHalIndex(sensor.sensorHandle, subHalIndex);
                     setDirectChannelFlags(&sensor, mSubHalList[subHalIndex]);
-                    if (static_cast<int>(sensor.type) == SENSOR_TYPE_QTI_WISE_LIGHT) {
+                    if (static_cast<int>(sensor.type) == SENSOR_TYPE_QTI_WISE_LIGHT
+                            && android::base::GetBoolProperty("vendor.sensors.als_correction.enable", false)) {
                         sensor.type = SensorType::LIGHT;
                         ALOGV("Replaced QTI Light sensor with standard light sensor");
                         AlsCorrection::init();
@@ -672,7 +674,8 @@ void HalProxy::postEventsToMessageQueue(const std::vector<Event>& eventsList, si
     }
     std::vector<Event> events(eventsList);
     for (auto& event : events) {
-        if (static_cast<int>(event.sensorType) == SENSOR_TYPE_QTI_WISE_LIGHT) {
+        if (static_cast<int>(event.sensorType) == SENSOR_TYPE_QTI_WISE_LIGHT
+                && android::base::GetBoolProperty("vendor.sensors.als_correction.enable", false)) {
             AlsCorrection::process(event);
         }
     }
